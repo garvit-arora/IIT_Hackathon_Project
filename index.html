@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenized Social Profiles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background 0.3s;
+        }
+
+        nav a:hover {
+            background: #2575fc;
+            border-radius: 5px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: #2575fc;
+            color: white;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #6a11cb;
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            width: 80%;
+            font-size: 16px;
+        }
+
+        #leaderboard {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        #leaderboard li {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="showPage('home')">Home</a>
+        <a href="#" onclick="showPage('profile')">Profile</a>
+        <a href="#" onclick="showPage('leaderboard')">Leaderboard</a>
+        <a href="#" onclick="showPage('transfer')">Transfer Tokens</a>
+    </nav>
+
+    <div id="home" class="container fade-in">
+        <h1>Welcome to Tokenized Social Profiles</h1>
+        <p>Connect your wallet and tokenize your social engagement today!</p>
+        <button id="connectWalletButton">Connect Wallet</button>
+    </div>
+
+    <div id="profile" class="container hidden fade-in">
+        <h2>Your Profile</h2>
+        <p id="walletAddress">Wallet Address: Not connected</p>
+        <p id="tokenBalance">Token Balance: 0</p>
+        <input type="number" id="engagementScore" placeholder="Enter Engagement Score">
+        <button id="updateScoreButton">Update Engagement</button>
+    </div>
+
+    <div id="leaderboard" class="container hidden fade-in">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboardList">
+            <li>Loading...</li>
+        </ul>
+    </div>
+
+    <div id="transfer" class="container hidden fade-in">
+        <h2>Transfer Tokens</h2>
+        <input type="text" id="recipientAddress" placeholder="Recipient Wallet Address">
+        <input type="number" id="tokenAmount" placeholder="Amount to Transfer">
+        <button id="transferButton">Transfer</button>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 Tokenized Social Profiles. All rights reserved.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+    <script>
+        let web3;
+        let contract;
+        const contractAddress = 'YOUR_CONTRACT_ADDRESS';
+        const abi = [];
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await web3.eth.getAccounts();
+                document.getElementById('walletAddress').innerText = `Wallet Address: ${accounts[0]}`;
+                getTokenBalance(accounts[0]);
+                showPage('profile');
+            } else {
+                alert('Please install MetaMask!');
+            }
+        }
+
+        async function getTokenBalance(address) {
+            contract = new web3.eth.Contract(abi, contractAddress);
+            const balance = await contract.methods.balanceOf(address).call();
+            document.getElementById('tokenBalance').innerText = `Token Balance: ${balance}`;
+        }
+
+        async function updateEngagementScore() {
+            const score = document.getElementById('engagementScore').value;
+            const accounts = await web3.eth.getAccounts();
+            const response = await fetch('/update_engagement', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_address: accounts[0], engagement_score: score }),
+            });
+            const result = await response.json();
+            alert(result.message);
+            getTokenBalance(accounts[0]);
+        }
+
+        async function transferTokens() {
+            const recipient = document.getElementById('recipientAddress').value;
+            const amount = document.getElementById('tokenAmount').value;
+            const accounts = await web3.eth.getAccounts();
+
+            await contract.methods.transfer(recipient, amount).send({ from: accounts[0] });
+            alert('Tokens transferred successfully!');
+            getTokenBalance(accounts[0]);
+        }
+
+        async function loadLeaderboard() {
+            const response = await fetch('/leaderboard');
+            const data = await response.json();
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+
+            data.forEach((user, index) => {
+                const li = document.createElement('li');
+                li.innerText = `${index + 1}. ${user.name} - ${user.score} tokens`;
+                leaderboardList.appendChild(li);
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.container').forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
+        document.getElementById('updateScoreButton').addEventListener('click', updateEngagementScore);
+        document.getElementById('transferButton').addEventListener('click', transferTokens);
+        document.querySelector('nav a[href="#leaderboard"]').addEventListener('click', loadLeaderboard);
+    </script>
+</body>
+</html>
