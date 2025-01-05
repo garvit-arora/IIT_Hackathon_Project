@@ -13,7 +13,7 @@ This document provides an estimated breakdown of the costs involved in developin
   - **Description**: Development will be carried out by our team members, leveraging existing knowledge and skills. No external developers are required for this phase.
   
 - **Outsourcing (if needed)**:  
-  - Estimated cost: **$X**  
+  - Estimated cost: **$1000**  
   - **Description**: In case we need additional help (e.g., for specific tasks like advanced UI/UX), we will consider outsourcing development, but this will only be required if necessary.
 
 ---
