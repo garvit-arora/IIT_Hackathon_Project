@@ -72,11 +72,5 @@ This document provides an estimated breakdown of the costs involved in developin
 
 ---
 
-## 📬 **Contact**  
-- **Email**: your-email@example.com  
-- **GitHub**: [GitHub Repo Link](https://github.com/your-repo)
-
----
-
 ### ⚠️ **Disclaimer**  
 This cost breakdown is an estimate and may vary depending on project scope, usage, and resources required.
